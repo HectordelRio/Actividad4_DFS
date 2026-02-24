@@ -12,6 +12,14 @@ if (process.env.NODE_ENV !== 'test') {
 app.use(express.json()); // Para leer JSON
 app.use(express.static('public')); // Para ver el HTML
 
+
+
+app.get('/', (req, res) => {
+    res.sendFile(__dirname + '/public/index.html');
+});
+
+
+app.use(express.static('public'));
 // Definir Rutas
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/products', require('./routes/products'));
