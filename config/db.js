@@ -1,16 +1,13 @@
 const mongoose = require('mongoose');
-require('dotenv').config(); // Agrega esta línea aquí arriba
+require('dotenv').config();
 
 const conectarDB = async () => {
-  if (!process.env.MONGO_URI) {
-    console.error('❌ Error: MONGO_URI no está definida en el .env');
-    process.exit(1);
-  }
   try {
+    // Usamos la URI que apunta a tu Compass (localhost)
     await mongoose.connect(process.env.MONGO_URI);
-    console.log('✅ MongoDB Conectado...');
+    console.log('✅ Conectado a MongoDB Compass (Local)');
   } catch (error) {
-    console.error('❌ Error:', error.message);
+    console.error('❌ Error de conexión:', error.message);
     process.exit(1);
   }
 };
