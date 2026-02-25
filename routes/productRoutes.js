@@ -1,10 +1,16 @@
 const express = require('express');
 const router = express.Router();
-const productController = require('../controllers/productController');
-const auth = require('../middleware/auth'); 
+const auth = require('../middleware/auth');
+const Product = require('../models/Product');
 
 
-router.get('/', auth, productController.getProducts);
-router.post('/', auth, productController.createProduct);
+router.get('/', auth, async (req, res) => {
+    try {
+        const products = await Product.find();
+        res.json(products);
+    } catch (err) {
+        res.status(500).json({ msg: 'Error al obtener productos' });
+    }
+});
 
 module.exports = router;

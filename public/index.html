@@ -2,59 +2,66 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Login Profesional</title>
+    <title>Panel de Productos</title>
     <style>
-        body { font-family: 'Arial', sans-serif; background: #2c3e50; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .login-box { background: white; padding: 40px; border-radius: 10px; box-shadow: 0 15px 25px rgba(0,0,0,0.5); width: 350px; text-align: center; }
-        h2 { margin: 0 0 20px; color: #333; }
-        input { width: 100%; padding: 12px; margin-bottom: 20px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background: #3498db; border: none; color: white; font-size: 16px; border-radius: 5px; cursor: pointer; transition: 0.3s; }
-        button:hover { background: #2980b9; }
-        #mensaje { margin-top: 20px; font-weight: bold; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding: 20px; text-align: center; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 20px; }
+        .card { background: #fff; border: 1px solid #ddd; padding: 15px; border-radius: 8px; text-align: left; }
+        .card h3 { margin: 0 0 10px; color: #333; }
+        .price { color: #28a745; font-weight: bold; font-size: 1.2rem; }
+        button { background: #dc3545; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 20px; }
     </style>
 </head>
 <body>
 
-<div class="login-box">
-    <h2>Panel </h2>
-    <input type="email" id="email" placeholder="admin@test.com">
-    <input type="password" id="pass" placeholder="Contraseña">
-    <button id="btnEntrar">ENTRAR</button>
-    <div id="mensaje"></div>
+<div class="container">
+    <h1>📦 Catálogo de Productos</h1>
+    <div id="lista-productos" class="grid">Cargando...</div>
+    <button onclick="logout()">Cerrar Sesión</button>
 </div>
 
 <script>
-    document.getElementById('btnEntrar').onclick = async () => {
-        const email = document.getElementById('email').value.trim();
-        const password = document.getElementById('pass').value;
-        const msgDiv = document.getElementById('mensaje');
-
-        msgDiv.innerHTML = "Procesando...";
-        msgDiv.style.color = "blue";
+    async function cargarProductos() {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = '/';
+            return;
+        }
 
         try {
-            const respuesta = await fetch('/api/auth/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password })
+            const respuesta = await fetch('/api/products', {
+                headers: { 'x-auth-token': token }
             });
 
-            const data = await respuesta.json();
-
-            if (respuesta.ok && data.token) {
-                localStorage.setItem('token', data.token);
-                msgDiv.style.color = "green";
-                msgDiv.innerHTML = " ¡Bienvenido! Redirigiendo...";
-                setTimeout(() => window.location.href = 'productos.html', 1000);
-            } else {
-                msgDiv.style.color = "red";
-                msgDiv.innerHTML = " " + (data.msg || "Error");
+            if (respuesta.status === 401 || respuesta.status === 400) {
+                localStorage.clear();
+                window.location.href = '/';
+                return;
             }
-        } catch (err) {
-            msgDiv.style.color = "red";
-            msgDiv.innerHTML = " Error: No se pudo conectar al servidor";
+
+            const productos = await respuesta.json();
+            const divLista = document.getElementById('lista-productos');
+            
+            divLista.innerHTML = productos.map(p => `
+                <div class="card">
+                    <h3>${p.name}</h3>
+                    <p>Categoría: ${p.category}</p>
+                    <p class="price">$${p.price}</p>
+                </div>
+            `).join('');
+
+        } catch (error) {
+            document.getElementById('lista-productos').innerHTML = "Error al conectar con el servidor.";
         }
-    };
+    }
+
+    function logout() {
+        localStorage.clear();
+        window.location.href = '/';
+    }
+
+    cargarProductos();
 </script>
 </body>
 </html>
