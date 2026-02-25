@@ -8,54 +8,61 @@ const path = require('path');
 dotenv.config();
 const app = express();
 
-// Middlewares
 app.use(express.json());
 app.use(cors());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Modelos (Definidos aquí mismo para evitar errores de ruta)
+
 const UserSchema = new mongoose.Schema({
     username: String,
     email: { type: String, unique: true },
     password: { type: String, required: true }
 });
-const User = mongoose.model('User', UserSchema);
+const User = mongoose.models.User || mongoose.model('User', UserSchema);
 
-// Conexión y Creación de Usuario
-mongoose.connect(process.env.MONGO_URI)
-    .then(async () => {
+
+const connectDB = async () => {
+    try {
+        await mongoose.connect(process.env.MONGO_URI);
         console.log('✅ Conectado a MongoDB Atlas');
         
-        // Borramos si existe y lo creamos de nuevo para asegurar contraseña '123'
-        await User.deleteOne({ email: 'admin@test.com' });
-        const hashedPassword = await bcrypt.hash('123', 10);
-        await User.create({
-            username: 'admin',
-            email: 'admin@test.com',
-            password: hashedPassword
-        });
-        console.log('👤 Usuario admin@test.com restablecido (Pass: 123)');
-    })
-    .catch(err => console.error('❌ Error de conexión:', err));
+        
+        const adminExist = await User.findOne({ email: 'admin@test.com' });
+        if (!adminExist) {
+            const hashedPassword = await bcrypt.hash('123', 10);
+            await User.create({ username: 'admin', email: 'admin@test.com', password: hashedPassword });
+        }
+    } catch (err) {
+        console.error('❌ Error:', err);
+    }
+};
+connectDB();
 
-// --- RUTA DE LOGIN ---
+//rutas
 const jwt = require('jsonwebtoken');
 app.post('/api/auth/login', async (req, res) => {
     try {
         const { email, password } = req.body;
         const user = await User.findOne({ email: email.toLowerCase() });
-
         if (!user) return res.status(404).json({ msg: 'Usuario no encontrado' });
-
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return res.status(400).json({ msg: 'Contraseña incorrecta' });
-
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || 'secret', { expiresIn: '1h' });
         res.json({ token, user: { username: user.username } });
-    } catch (err) {
-        res.status(500).json({ msg: 'Error en el servidor' });
-    }
+    } catch (err) { res.status(500).json({ msg: 'Error' }); }
 });
 
-const PORT = process.env.PORT || 10000;
-app.listen(PORT, '0.0.0.0', () => console.log(` Server en puerto ${PORT}`));
+app.get('/api/products', (req, res) => {
+    
+    const token = req.header('x-auth-token');
+    if (!token) return res.status(401).json({ msg: 'No hay token, permiso denegado' });
+    res.json([{ name: 'Producto 1' }]);
+});
+
+
+module.exports = app; 
+
+if (require.main === module) {
+    const PORT = process.env.PORT || 10000;
+    app.listen(PORT, '0.0.0.0', () => console.log(`🚀 Server en puerto ${PORT}`));
+}
