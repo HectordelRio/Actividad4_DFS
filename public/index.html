@@ -2,23 +2,24 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Login - Mi Aplicación</title>
+    <title>SaaS Login</title>
     <style>
-        body { font-family: sans-serif; display: flex; justify-content: center; padding-top: 50px; }
-        .login-card { border: 1px solid #ccc; padding: 20px; border-radius: 8px; width: 300px; }
-        input { width: 90%; margin-bottom: 10px; padding: 8px; }
-        button { width: 100%; padding: 10px; background: #28a745; color: white; border: none; cursor: pointer; }
+        body { font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #f0f2f5; }
+        .card { background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 320px; }
+        input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        button:hover { background: #0056b3; }
     </style>
 </head>
 <body>
-    <div class="login-card">
+    <div class="card">
         <h2>Iniciar Sesión</h2>
         <form id="loginForm">
-            <input type="email" id="email" placeholder="Correo electrónico" required>
-            <input type="password" id="password" placeholder="Contraseña" required>
+            <input type="email" id="email" placeholder="admin@test.com" required>
+            <input type="password" id="password" placeholder="123" required>
             <button type="submit">Entrar</button>
         </form>
-        <p id="mensaje" style="color: red;"></p>
+        <p id="msg" style="margin-top: 15px; font-size: 14px; text-align: center;"></p>
     </div>
 
     <script>
@@ -26,27 +27,22 @@
             e.preventDefault();
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
-            const mensaje = document.getElementById('mensaje');
+            const msg = document.getElementById('msg');
 
-            try {
-                const respuesta = await fetch('/api/auth/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
-                });
+            const res = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
 
-                const resultado = await respuesta.json();
-
-                if (respuesta.ok) {
-                    // Si el login es correcto, guardamos el token
-                    localStorage.setItem('token', resultado.token);
-                    alert('¡Login exitoso! Token guardado.');
-                    // Aquí podrías redirigir a una página de productos
-                } else {
-                    mensaje.innerText = resultado.msg || 'Error al iniciar sesión';
-                }
-            } catch (error) {
-                mensaje.innerText = 'No se pudo conectar con el servidor';
+            const data = await res.json();
+            if (res.ok) {
+                msg.style.color = "green";
+                msg.innerText = "✅ " + data.msg + ". Token guardado.";
+                localStorage.setItem('token', data.token);
+            } else {
+                msg.style.color = "red";
+                msg.innerText = "❌ " + data.msg;
             }
         });
     </script>
