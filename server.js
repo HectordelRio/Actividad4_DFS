@@ -32,9 +32,23 @@ app.get('/', (req, res) => {
     res.sendFile(__dirname + '/public/index.html');
 });
 
-const PORT = process.env.PORT || 3000;
-if (process.env.NODE_ENV !== 'test') {
-    app.listen(PORT, () => console.log(`🚀 Servidor en puerto ${PORT}`));
-}
+const iniciarApp = async () => {
+    try {
+        // Solo intentamos conectar a BD si NO es un test
+        if (process.env.NODE_ENV !== 'test') {
+            await conectarDB();
+            // Esto crea el usuario admin@test.com automáticamente
+            await crearUsuarioPrueba(); 
+        }
+    } catch (error) {
+        // Si la BD falla (como tu Compass local), el servidor NO se muere
+        console.error("Error de conexión a DB, pero el servidor iniciará igual:", error.message);
+    }
+
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, () => {
+        console.log(` Servidor listo en http://localhost:${PORT}`);
+    });
+};
 
 module.exports = app;
