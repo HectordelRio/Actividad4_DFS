@@ -3,7 +3,7 @@ require('dotenv').config();
 
 const conectarDB = async () => {
   try {
-    // Usamos la URI que apunta a tu Compass (localhost)
+    
     await mongoose.connect(process.env.MONGO_URI);
     console.log(' Conectado a MongoDB Compass (Local)');
   } catch (error) {

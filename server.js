@@ -1,56 +1,79 @@
 const express = require('express');
-const conectarDB = require('./config/db'); // Revisa que esta ruta sea correcta
-const User = require('./models/User');    // Revisa que esta ruta sea correcta
-require('dotenv').config();
+const mongoose = require('mongoose');
+const dotenv = require('dotenv');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const cors = require('cors');
+const path = require('path');
 
+
+const User = require('./models/User'); 
+
+dotenv.config();
 const app = express();
+
+
 app.use(express.json());
-app.use(express.static('public'));
+app.use(cors());
+app.use(express.static('public')); 
 
-// --- FUNCIONES AUXILIARES ---
 
-// Esta función crea el usuario si no existe para que el botón de login funcione
-async function crearUsuarioPrueba() {
-    try {
-        const existe = await User.findOne({ email: "admin@test.com" });
-        if (!existe) {
-            const nuevo = new User({ email: "admin@test.com", password: "123" });
-            // El modelo User se encarga de encriptar la clave 123
-            await nuevo.save();
-            console.log(" Usuario de prueba creado: admin@test.com / 123");
-        } else {
-            console.log(" Usuario de prueba ya existe en la base de datos.");
+const MONGO_URI = process.env.MONGO_URI;
+const JWT_SECRET = process.env.JWT_SECRET || 'clavesecreta';
+
+mongoose.connect(MONGO_URI)
+    .then(async () => {
+        console.log('✅ Conectado a MongoDB Atlas');
+        
+        
+        const userExists = await User.findOne({ email: 'admin@test.com' });
+        if (!userExists) {
+            const hashedPassword = await bcrypt.hash('123', 10);
+            await User.create({
+                username: 'admin',
+                email: 'admin@test.com',
+                password: hashedPassword
+            });
+            console.log('👤 Usuario de prueba creado: admin@test.com / 123');
         }
-    } catch (e) {
-        console.log("⚠️ No se pudo crear/verificar el usuario de prueba:", e.message);
+    })
+    .catch(err => console.error('❌ Error de conexión:', err));
+
+
+
+//ogin
+app.post('/api/auth/login', async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        const user = await User.findOne({ email });
+
+        if (!user) return res.status(400).json({ msg: 'Usuario no encontrado' });
+
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) return res.status(400).json({ msg: 'Contraseña incorrecta' });
+
+        const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '1h' });
+        res.json({ token, user: { username: user.username, email: user.email } });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
-}
-
-// --- RUTAS ---
-app.use('/api/auth', require('./routes/auth'));
-
-app.get('/', (req, res) => {
-    res.sendFile(__dirname + '/public/index.html');
 });
 
-// --- ARRANQUE DEL SERVIDOR ---
-const iniciarApp = async () => {
+//Registro 
+app.post('/api/auth/register', async (req, res) => {
     try {
-        // En Render o Local, intentamos conectar a la BD
-        if (process.env.NODE_ENV !== 'test') {
-            await conectarDB();
-            await crearUsuarioPrueba();
-        }
-    } catch (error) {
-        console.error(" Falló la conexión inicial, pero el servidor intentará subir igual:", error.message);
+        const { username, email, password } = req.body;
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const newUser = new User({ username, email, password: hashedPassword });
+        await newUser.save();
+        res.status(201).json({ msg: 'Usuario registrado' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
+});
 
-    const PORT = process.env.PORT || 10000; // Render usa 10000 por defecto
+
+const PORT = process.env.PORT || 10000;
 app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Servidor corriendo en el puerto ${PORT}`);
+    console.log(`🚀 Servidor listo en puerto ${PORT}`);
 });
-};
-
-iniciarApp();
-
-module.exports = app;

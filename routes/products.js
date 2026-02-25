@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 
-// Middleware para proteger rutas
+
 const authMiddleware = (req, res, next) => {
     const token = req.header('x-auth-token');
     if (!token) return res.status(401).json({ msg: 'No hay token, permiso denegado' });
@@ -13,7 +13,7 @@ const authMiddleware = (req, res, next) => {
     } catch (e) { res.status(400).json({ msg: 'Token no válido' }); }
 };
 
-// Ruta protegida
+
 router.get('/', authMiddleware, (req, res) => {
     res.json({ msg: 'Bienvenido al inventario de productos' });
 });
