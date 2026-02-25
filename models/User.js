@@ -6,5 +6,6 @@ const userSchema = new mongoose.Schema({
     password: { type: String, required: true }
 });
 
-// ESTA LÍNEA ES LA CLAVE:
-module.exports = mongoose.model('User', userSchema);
+// ESTA LÍNEA ES LA CLAVE:}
+const User = mongoose.model('User', userSchema);    
+module.exports = User;
