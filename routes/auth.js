@@ -2,8 +2,7 @@ const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/authController');
 
-// Ruta: POST /api/auth/login
+router.post('/register', authController.register); // Necesitas esta para crear tu cuenta
 router.post('/login', authController.login);
-router.post('/register', authController.register);
 
 module.exports = router;
