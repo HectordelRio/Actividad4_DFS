@@ -1,30 +1,68 @@
 <!DOCTYPE html>
 <html lang="es">
-<head><title>Login</title></head>
+<head>
+    <meta charset="UTF-8">
+    <title>Login - Actividad 4</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .login-card { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 300px; text-align: center; }
+        h2 { color: #1c1e21; margin-bottom: 1.5rem; }
+        input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background: #007bff; border: none; color: white; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        button:hover { background: #0056b3; }
+        #mensaje { margin-top: 15px; font-size: 14px; }
+    </style>
+</head>
 <body>
-    <h2>Login Actividad 4</h2>
-    <input type="email" id="email" placeholder="admin@test.com">
-    <input type="password" id="pass" placeholder="123">
-    <button onclick="login()">Entrar</button>
 
-    <script>
-        async function login() {
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('pass').value;
+<div class="login-card">
+    <h2>Iniciar Sesión</h2>
+    <input type="email" id="email" placeholder="admin@test.com" required>
+    <input type="password" id="pass" placeholder="123" required>
+    <button id="btnEntrar">Entrar</button>
+    <div id="mensaje"></div>
+</div>
+
+<script>
+    document.getElementById('btnEntrar').addEventListener('click', async () => {
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('pass').value;
+        const divMensaje = document.getElementById('mensaje');
+
+        if(!email || !password) {
+            divMensaje.innerHTML = "❌ Llena todos los campos";
+            return;
+        }
+
+        divMensaje.innerHTML = "Cargando...";
+
+        try {
             const res = await fetch('/api/auth/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password })
             });
+
             const data = await res.json();
-            if (data.token) {
+
+            if (res.ok && data.token) {
                 localStorage.setItem('token', data.token);
-                alert(" Bienvenido " + data.user.username);
-                window.location.href = '/productos.html'; // REDIRECCIÓN
+                divMensaje.style.color = "green";
+                divMensaje.innerHTML = " Éxito! redirigiendo...";
+                
+                
+                setTimeout(() => {
+                    window.location.href = '/productos.html';
+                }, 1000);
             } else {
-                alert(" " + data.msg);
+                divMensaje.style.color = "red";
+                divMensaje.innerHTML = "" + (data.msg || "Error al entrar");
             }
+        } catch (error) {
+            divMensaje.style.color = "red";
+            divMensaje.innerHTML = " Error de conexión con el servidor";
         }
-    </script>
+    });
+</script>
 </body>
 </html>
