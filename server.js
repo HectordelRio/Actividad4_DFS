@@ -17,9 +17,9 @@ async function crearUsuarioPrueba() {
             const nuevo = new User({ email: "admin@test.com", password: "123" });
             // El modelo User se encarga de encriptar la clave 123
             await nuevo.save();
-            console.log("👤 Usuario de prueba creado: admin@test.com / 123");
+            console.log(" Usuario de prueba creado: admin@test.com / 123");
         } else {
-            console.log("✅ Usuario de prueba ya existe en la base de datos.");
+            console.log(" Usuario de prueba ya existe en la base de datos.");
         }
     } catch (e) {
         console.log("⚠️ No se pudo crear/verificar el usuario de prueba:", e.message);
@@ -42,12 +42,12 @@ const iniciarApp = async () => {
             await crearUsuarioPrueba();
         }
     } catch (error) {
-        console.error("❌ Falló la conexión inicial, pero el servidor intentará subir igual:", error.message);
+        console.error(" Falló la conexión inicial, pero el servidor intentará subir igual:", error.message);
     }
 
     const PORT = process.env.PORT || 3000;
     app.listen(PORT, () => {
-        console.log(`🚀 Servidor listo en puerto ${PORT}`);
+        console.log(` Servidor listo en puerto ${PORT}`);
     });
 };
 
