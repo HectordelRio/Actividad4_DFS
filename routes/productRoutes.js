@@ -3,13 +3,13 @@ const router = express.Router();
 const auth = require('../middleware/auth');
 const Product = require('../models/Product');
 
-
+// Obtener todos los productos
 router.get('/', auth, async (req, res) => {
     try {
-        const products = await Product.find();
-        res.json(products);
+        const productos = await Product.find();
+        res.json(productos); // Aquí es donde se envían al HTML
     } catch (err) {
-        res.status(500).json({ msg: 'Error al obtener productos' });
+        res.status(500).json({ msg: 'Error al cargar productos' });
     }
 });
 

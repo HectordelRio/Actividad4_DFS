@@ -11,7 +11,7 @@ exports.login = async (req, res) => {
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return res.status(400).json({ msg: 'Contraseña incorrecta' });
 
-        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || 'secreto', { expiresIn: '1h' });
+        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || 'secreto', { expiresIn: '24h' });
         res.json({ token, msg: "Login exitoso" });
     } catch (err) {
         res.status(500).json({ msg: 'Error en el servidor' });

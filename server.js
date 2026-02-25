@@ -24,7 +24,7 @@ const User = mongoose.models.User || mongoose.model('User', UserSchema);
 const connectDB = async () => {
     try {
         await mongoose.connect(process.env.MONGO_URI);
-        console.log('✅ Conectado a MongoDB Atlas');
+        console.log(' Conectado a MongoDB Atlas');
         
         
         const adminExist = await User.findOne({ email: 'admin@test.com' });
@@ -33,7 +33,7 @@ const connectDB = async () => {
             await User.create({ username: 'admin', email: 'admin@test.com', password: hashedPassword });
         }
     } catch (err) {
-        console.error('❌ Error:', err);
+        console.error(' Error:', err);
     }
 };
 connectDB();
@@ -64,5 +64,5 @@ module.exports = app;
 
 if (require.main === module) {
     const PORT = process.env.PORT || 10000;
-    app.listen(PORT, '0.0.0.0', () => console.log(`🚀 Server en puerto ${PORT}`));
+    app.listen(PORT, '0.0.0.0', () => console.log(` Server en puerto ${PORT}`));
 }

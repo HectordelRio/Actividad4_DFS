@@ -10,7 +10,7 @@ describe('Pruebas Unitarias', () => {
         await new Promise(resolve => setTimeout(resolve, 1500)); 
     });
 
-    it('Debería loguear al admin', async () => {
+    it('Deberia loguear al admin', async () => {
         const res = await request(app)
             .post('/api/auth/login')
             .send({ email: 'admin@test.com', password: '123' });
@@ -18,7 +18,7 @@ describe('Pruebas Unitarias', () => {
         expect(res.body).toHaveProperty('token');
     });
 
-    it('Debería denegar acceso sin token', async () => {
+    it('Deberia denegar acceso sin token', async () => {
         const res = await request(app).get('/api/products');
         expect(res.statusCode).toEqual(401);
     });
