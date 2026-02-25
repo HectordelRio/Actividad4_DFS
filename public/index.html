@@ -1,50 +1,30 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>SaaS Login</title>
-    <style>
-        body { font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #f0f2f5; }
-        .card { background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 320px; }
-        input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
-        button { width: 100%; padding: 10px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        button:hover { background: #0056b3; }
-    </style>
-</head>
+<head><title>Login</title></head>
 <body>
-    <div class="card">
-        <h2>Iniciar Sesión</h2>
-        <form id="loginForm">
-            <input type="email" id="email" placeholder="admin@test.com" required>
-            <input type="password" id="password" placeholder="123" required>
-            <button type="submit">Entrar</button>
-        </form>
-        <p id="msg" style="margin-top: 15px; font-size: 14px; text-align: center;"></p>
-    </div>
+    <h2>Login Actividad 4</h2>
+    <input type="email" id="email" placeholder="admin@test.com">
+    <input type="password" id="pass" placeholder="123">
+    <button onclick="login()">Entrar</button>
 
     <script>
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
+        async function login() {
             const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const msg = document.getElementById('msg');
-
+            const password = document.getElementById('pass').value;
             const res = await fetch('/api/auth/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password })
             });
-
             const data = await res.json();
-            if (res.ok) {
-                msg.style.color = "green";
-                msg.innerText = "✅ " + data.msg + ". Token guardado.";
+            if (data.token) {
                 localStorage.setItem('token', data.token);
+                alert(" Bienvenido " + data.user.username);
+                window.location.href = '/productos.html'; // REDIRECCIÓN
             } else {
-                msg.style.color = "red";
-                msg.innerText = "❌ " + data.msg;
+                alert(" " + data.msg);
             }
-        });
+        }
     </script>
 </body>
 </html>
